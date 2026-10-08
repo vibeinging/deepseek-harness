@@ -153,6 +153,7 @@ pnpm applies local patches to the following packages at install time, so shipped
 - `app-builder-lib@26.17.0` — [`patches/app-builder-lib@26.17.0.patch`](patches/app-builder-lib@26.17.0.patch)
 - `exceljs@4.4.0` — [`patches/exceljs@4.4.0.patch`](patches/exceljs@4.4.0.patch)
 - `node-pty@1.2.0-beta.15` — [`patches/node-pty@1.2.0-beta.15.patch`](patches/node-pty@1.2.0-beta.15.patch)
+- `app-builder-lib@26.15.3` — [`patches/app-builder-lib@26.15.3.patch`](patches/app-builder-lib@26.15.3.patch)
 
 ## Chrome DevTools frontend
 
