@@ -29,6 +29,21 @@ import { resolveDesktopTargetBuildPaths } from './desktop-build-paths.mjs'
 
 const DSH_PACKAGE = '@deepseek-ai/dsh'
 const ROOT_PACKAGES = [DSH_PACKAGE, DESKTOP_HOST_PACKAGE] as const
+// DSH Desktop fork: 预装生态组合包作为额外 root 进入签名包集；tarball 由 apps/desktop/embedded/ 提供，
+// 清单与 project-manager.ts 的 FORK_PROFILE_BUNDLES 对齐。
+const FORK_ROOT_PACKAGES = [
+  'dsh-better-sidebar',
+  'dshmarket',
+  '@vibeinging/dsh-session-teams',
+  '@linxin666/dsh-client-ui-task-board',
+  'ds-harness-remote',
+  'dsh-multimedia-webui-input',
+  '@vibeinging/dsh-model-inheritance',
+  '@vibeinging/dsh-client-ui-worktree',
+  '@vibeinging/dsh-desktop-chrome',
+  '@vibeinging/dsh-desktop-shell',
+  '@deepseek-ai/dsh-experimental-schedule-bundle',
+] as const
 const APP_ROOT = resolve(import.meta.dirname, '..')
 const REPOSITORY_ROOT = resolve(APP_ROOT, '..', '..')
 
@@ -80,7 +95,7 @@ export function selectDesktopPackageClosure(
       if (available.has(dependency)) visit(dependency)
     }
   }
-  for (const name of ROOT_PACKAGES) {
+  for (const name of [...ROOT_PACKAGES, ...FORK_ROOT_PACKAGES]) {
     if (!available.has(name)) throw new Error(`desktop package set: packed inputs omit ${name}`)
     visit(name)
   }
@@ -164,6 +179,7 @@ function main(): void {
     buildPaths.packedDsh,
     buildPaths.packedVendor,
     buildPaths.packedLandlock,
+    resolve(APP_ROOT, 'embedded'),
   ]
   const { values } = parseArgs({
     options: { from: { type: 'string', multiple: true }, out: { type: 'string' } },
