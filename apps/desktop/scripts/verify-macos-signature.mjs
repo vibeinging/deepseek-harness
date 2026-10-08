@@ -13,8 +13,20 @@ import { loadDesktopPackageEnvironment } from './desktop-package-environment.mjs
  */
 export function assertMacOSSignatureDetails(details, expected) {
   const fields = new Set(details.split(/\r?\n/u).map(line => line.trim()))
-  const expectedAuthority = `Authority=Developer ID Application: ${expected.signingIdentity}`
   const expectedTeam = `TeamIdentifier=${expected.teamId}`
+  // DSH Desktop fork: 40 位十六进制哈希身份时 codesign 输出的是证书名而非哈希，
+  // 按 Authority 前缀存在性 + 严格 TeamIdentifier 匹配。
+  if (/^[0-9A-Fa-f]{40}$/u.test(expected.signingIdentity)) {
+    const missing = [
+      [...fields].some(field => field.startsWith('Authority=Developer ID Application: ')) ? undefined : 'Developer ID Application authority',
+      fields.has(expectedTeam) ? undefined : expectedTeam,
+    ].filter(Boolean)
+    if (missing.length > 0) {
+      throw new Error(`desktop macOS signing: signature does not match the release identity; missing ${missing.join(', ')}`)
+    }
+    return
+  }
+  const expectedAuthority = `Authority=Developer ID Application: ${expected.signingIdentity}`
   const missing = [expectedAuthority, expectedTeam].filter(field => !fields.has(field))
   if (missing.length > 0) {
     throw new Error(`desktop macOS signing: signature does not match the release identity; missing ${missing.join(', ')}`)
@@ -116,11 +128,14 @@ function runCodeSign(args) {
  */
 export async function signMacOSRuntimeCode(path, identifier, expected, entitlements) {
   const keychain = process.env.CSC_KEYCHAIN
-  if (!keychain) throw new Error('desktop macOS signing: run through the package command to prepare the signing keychain')
+  // DSH Desktop fork: 登录钥匙串模式下无临时 CSC_KEYCHAIN，按默认搜索列表签名。
+  if (!keychain && process.env.DSH_DESKTOP_MACOS_SIGNING_KEYCHAIN !== 'login') {
+    throw new Error('desktop macOS signing: run through the package command to prepare the signing keychain')
+  }
   await runAppleCommandAsync('/usr/bin/codesign', [
     '--force',
     '--sign', expected.signingIdentity,
-    '--keychain', keychain,
+    ...(keychain === undefined ? [] : ['--keychain', keychain]),
     '--identifier', identifier,
     '--timestamp',
     '--options', 'runtime',
