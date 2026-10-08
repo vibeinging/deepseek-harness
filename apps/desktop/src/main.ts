@@ -170,7 +170,9 @@ function developmentPrimaryRuntime(): string {
 
 function developmentHostInspectPort(enabled: boolean): number | undefined {
   const configured = process.env.DSH_DESKTOP_HOST_INSPECT_PORT
-  if (!enabled || configured === undefined || configured === '') return undefined
+  // DSH Desktop fork: 打包模式下显式设置该 env 也放行 Host inspector（调试用，opt-in）。
+  if (configured === undefined || configured === '') return undefined
+  if (!enabled && process.env.DSH_DESKTOP_HOST_INSPECT_PACKAGED !== '1') return undefined
   const port = Number(configured)
   if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) {
     throw new Error('dsh desktop: DSH_DESKTOP_HOST_INSPECT_PORT must be an integer from 1 through 65535')
