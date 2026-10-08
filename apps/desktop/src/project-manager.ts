@@ -35,16 +35,16 @@ const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
 // tarball 保持同步）。恢复流程（disableAllPlugins）仍回退官方 WEB_PROFILE 基线，保证
 // 最小可启动形态；dev 模式同样保持官方组合。
 export const FORK_BUNDLE_VERSIONS = {
-  'dsh-better-sidebar': '0.22.1',
-  'dshmarket': '1.66.3',
+  'dsh-better-sidebar': '0.24.1',
+  'dshmarket': '1.66.11',
   '@vibeinging/dsh-session-teams': '0.1.2',
-  '@linxin666/dsh-client-ui-task-board': '0.4.4',
-  'ds-harness-remote': '0.4.22',
+  '@linxin666/dsh-client-ui-task-board': '0.4.5',
+  'ds-harness-remote': '0.4.27',
   'dsh-multimedia-webui-input': '0.1.0',
   '@vibeinging/dsh-model-inheritance': '0.1.0',
-  '@vibeinging/dsh-client-ui-worktree': '0.1.2',
+  '@vibeinging/dsh-client-ui-worktree': '0.1.3',
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
-  '@vibeinging/dsh-desktop-shell': '0.1.0',
+  '@vibeinging/dsh-desktop-shell': '0.1.1',
 } as const
 const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS).concat(['@deepseek-ai/dsh-experimental-schedule-bundle'])
 const PROFILE_BUNDLES: readonly string[] = [...WEB_PROFILE.bundles, ...FORK_PROFILE_BUNDLES]
