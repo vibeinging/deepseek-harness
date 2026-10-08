@@ -30,6 +30,57 @@ const PROJECT_NAME = '@deepseek-ai/dsh-desktop-runtime'
 const DSH_PACKAGE = '@deepseek-ai/dsh'
 const CORE_BUILD_PACKAGE = '@deepseek-ai/dsh-subprocess-local'
 const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
+// DSH Desktop fork: 预装且默认启用的生态组合包（tarball 随签名包集提供，清单与
+// prepare-package-set.ts 的 FORK_ROOT_PACKAGES 对齐；版本须与 apps/desktop/embedded/ 的
+// tarball 保持同步）。恢复流程（disableAllPlugins）仍回退官方 WEB_PROFILE 基线，保证
+// 最小可启动形态；dev 模式同样保持官方组合。
+export const FORK_BUNDLE_VERSIONS = {
+  'dsh-better-sidebar': '0.22.1',
+  'dshmarket': '1.66.3',
+  '@vibeinging/dsh-session-teams': '0.1.2',
+  '@linxin666/dsh-client-ui-task-board': '0.4.4',
+  'ds-harness-remote': '0.4.22',
+  'dsh-multimedia-webui-input': '0.1.0',
+  '@vibeinging/dsh-model-inheritance': '0.1.0',
+  '@vibeinging/dsh-client-ui-worktree': '0.1.2',
+  '@vibeinging/dsh-desktop-chrome': '0.1.0',
+  '@vibeinging/dsh-desktop-shell': '0.1.0',
+} as const
+const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS).concat(['@deepseek-ai/dsh-experimental-schedule-bundle'])
+const PROFILE_BUNDLES: readonly string[] = [...WEB_PROFILE.bundles, ...FORK_PROFILE_BUNDLES]
+
+/**
+ * DSH Desktop fork: 首启播种官方版本兼容豁免（profile 的 compatibility.json）。
+ * 预装生态包的 peer 声明面向较旧的 DSH 线，boot 预检（compatibility-preflight）会拒绝其行；
+ * 豁免等价于用户逐包 `dsh plugin allow-version --accept-risk` 的产品化预授权。
+ * 合并式播种：文件不存在则全量写入；已存在则只补缺失的 fork 豁免键（fork bundle 升版本后
+ * 键名随之变化，一次性播种会让升级安装被兼容预检拒绝）。既有键——包括用户经插件管理器
+ * 手工授权的——原样保留；顶层结构非法则跳过，与官方 setter 的 rewritable 语义一致。
+ * @param projectDir - Desktop profile 目录。
+ * @param runtimeVersion - 精确 DSH 运行时版本（来自 desktop-runtime.json）。
+ */
+function seedForkProfileCompatibility(projectDir: string, runtimeVersion: string): void {
+  const path = join(projectDir, 'compatibility.json')
+  let exemptions: Record<string, string[]> = {}
+  if (existsSync(path)) {
+    try {
+      const value: unknown = JSON.parse(readFileSync(path, 'utf8'))
+      if (value === null || typeof value !== 'object' || Array.isArray(value)) return
+      exemptions = value as Record<string, string[]>
+    } catch {
+      return
+    }
+  }
+  let changed = false
+  for (const [name, version] of Object.entries(FORK_BUNDLE_VERSIONS)) {
+    const key = `${name}@${version}`
+    if (exemptions[key] === undefined) {
+      exemptions[key] = [runtimeVersion]
+      changed = true
+    }
+  }
+  if (changed) writeFileSync(path, `${JSON.stringify(exemptions, undefined, 2)}\n`, { mode: 0o600 })
+}
 const WORKSPACE_SETTINGS = 'nodeLinker: hoisted\nautoInstallPeers: false\n'
 function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, undefined, 2)}\n`, { mode: 0o600 })
@@ -83,9 +134,10 @@ export class DesktopProjectManager {
   async applyRelease(): Promise<void> {
     await this.withLock(() => {
       // Validation only: an unreadable or mismatched runtime descriptor stops preparation before the Host starts.
-      readDesktopRuntime(this.runtime.dsh)
+      const runtime = readDesktopRuntime(this.runtime.dsh)
       migrateProfileSettings(this.paths.profile)
       createPluginProfile(this.paths.profile)
+      seedForkProfileCompatibility(this.paths.profile, runtime.release.version)
       removeLinkProjections(this.paths.profile)
     })
   }
@@ -139,7 +191,7 @@ export function createRuntimeProjectMetadata(projectDir: string, release: Deskto
     private: true,
     version: '0.0.0',
     dependencies: desktopCorePackageOverrides(packageSet),
-    dsh: { profile: { bundles: [...WEB_PROFILE.bundles] } },
+    dsh: { profile: { bundles: [...PROFILE_BUNDLES] } },
   }
   writeJson(join(projectDir, 'package.json'), manifest)
   writeFileSync(
@@ -172,5 +224,5 @@ export function createDevelopmentProjectMetadata(projectDir: string, release: De
 
 /** Create the first external plugin profile without running a package manager. */
 export function createPluginProfile(projectDir: string): void {
-  initProfile(projectDir, WEB_PROFILE.bundles)
+  initProfile(projectDir, PROFILE_BUNDLES)
 }
