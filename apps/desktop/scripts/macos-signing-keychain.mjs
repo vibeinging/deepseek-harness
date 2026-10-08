@@ -46,6 +46,23 @@ function readUserKeychains(run) {
  * @returns {Promise<void>} Resolves after work and cleanup; rejects on setup, work, or cleanup failure.
  */
 export async function withMacOSSigningKeychain(environment, action, run = execute) {
+  // DSH Desktop fork: 登录钥匙串直连模式（证书常驻用户钥匙串，无 p12 导出物）。
+  // 身份值原样传给 codesign（40 位哈希或完整名），不拼接名字前缀，避免重名证书歧义。
+  // probe 文件在 action 期间存活并通过 DSH_DESKTOP_MACOS_SIGNING_PROBE 传递，
+  // 供 macos-cache-policy 绑定证书指纹（与官方临时钥匙串流程同构）。
+  if (environment.DSH_DESKTOP_MACOS_SIGNING_KEYCHAIN === 'login') {
+    const probe = join(tmpdir(), `dsh-macos-sign-probe-${process.pid}`)
+    run('/bin/cp', ['/usr/bin/true', probe])
+    run('/usr/bin/codesign', ['--force', '--sign', environment.DSH_DESKTOP_MACOS_SIGNING_IDENTITY, '--timestamp', '--options', 'runtime', probe])
+    run('/usr/bin/codesign', ['--verify', '--strict', probe])
+    const childEnvironment = { ...environment, DSH_DESKTOP_MACOS_SIGNING_PROBE: probe }
+    try {
+      await action(childEnvironment)
+    } finally {
+      rmSync(probe, { force: true })
+    }
+    return
+  }
   const certificate = environment.CSC_LINK
   const exportPassword = environment.CSC_KEY_PASSWORD
   if (!certificate || exportPassword === undefined) throw new Error('desktop macOS signing: CSC_LINK and CSC_KEY_PASSWORD are required')
