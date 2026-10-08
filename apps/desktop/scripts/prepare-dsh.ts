@@ -2,11 +2,11 @@
 
 import { packagingStep } from './packaging-step.mjs'
 import { spawn } from 'node:child_process'
-import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, join, relative, resolve } from 'node:path'
 import { desktopNodeEnvironment } from '../src/node-environment.ts'
-import { createRuntimeProjectMetadata } from '../src/project-manager.ts'
+import { createRuntimeProjectMetadata, FORK_BUNDLE_VERSIONS } from '../src/project-manager.ts'
 import { DESKTOP_HOST_PROTOCOL_VERSION } from '../src/host-protocol.ts'
 import { parseDesktopRelease, type DesktopRelease } from '../src/release.ts'
 import {
@@ -140,6 +140,30 @@ async function main(): Promise<void> {
         recursive: true, dereference: true,
         filter: source => desktopRuntimeFileExclusion(relative(modules, source), target, officeEngine) === undefined,
       })
+    })
+    // DSH Desktop fork: 剪掉运行时树里的空点文件（如第三方依赖 undici 携带的 .gitkeep）。
+    // electron-builder 打 ASAR 时会丢弃这类文件；封装清单（desktop-runtime.json）若把它们计入，
+    // verifyRuntimeArchive 的逐文件哈希比对必然失败。清单生成前剪除，使两边一致。
+    await packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'runtime:prune-empty-dotfiles', async () => {
+      const walk = (dir: string): void => {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          const path = join(dir, entry.name)
+          if (entry.isDirectory()) walk(path)
+          else if (entry.isFile() && entry.name.startsWith('.') && statSync(path).size === 0) rmSync(path)
+        }
+      }
+      walk(join(DSH_OUTPUT_ROOT, 'node_modules'))
+    })
+    // DSH Desktop fork: 把预装生态包注入运行时树里 @deepseek-ai/dsh 的 manifest 依赖。
+    // createRuntimeResolution 从 installAnchor（dsh manifest）BFS 收集拦截层条目；生态包是
+    // 运行时树的独立 root、不在 dsh 依赖闭包内，不注入则 Loader 按裸名导入必败（组合期
+    // failed to import、client 模块图缺席）。注入发生在封装清单生成之前，desktop-runtime.json
+    // 与 ASAR 两侧哈希一致。schedule-bundle 为 dsh 家族闭包成员，无需注入。
+    await packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'runtime:fork-bundle-reachability', async () => {
+      const manifestPath = join(DSH_OUTPUT_ROOT, 'node_modules', '@deepseek-ai', 'dsh', 'package.json')
+      const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { dependencies?: Record<string, string> }
+      manifest.dependencies = { ...(manifest.dependencies ?? {}), ...FORK_BUNDLE_VERSIONS }
+      writeFileSync(manifestPath, `${JSON.stringify(manifest, undefined, 2)}\n`)
     })
     writeFileSync(join(DSH_OUTPUT_ROOT, 'package.json'), `${JSON.stringify({
       name: '@deepseek-ai/dsh-desktop-runtime', private: true, version: release.version, type: 'module',
