@@ -42,6 +42,7 @@ const FORK_ROOT_PACKAGES = [
   '@vibeinging/dsh-client-ui-worktree',
   '@vibeinging/dsh-desktop-chrome',
   '@vibeinging/dsh-desktop-shell',
+  'dsh-context',
   '@deepseek-ai/dsh-experimental-schedule-bundle',
 ] as const
 const APP_ROOT = resolve(import.meta.dirname, '..')
