@@ -4,7 +4,7 @@ import { packagingStep } from './packaging-step.mjs'
 import { execFileSync } from 'node:child_process'
 import { chmodSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { downloadArtifact } from '@electron/get'
 import extractZip from 'extract-zip'
@@ -38,7 +38,16 @@ async function main(): Promise<void> {
   const archive = await packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'download:electron',
     () => downloadArtifact({ version, platform, arch, artifactName: 'electron', cacheRoot: BUILD_PATHS.downloads }))
   rmSync(BUILD_PATHS.electron, { recursive: true, force: true })
-  await packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'extract:electron', () => extractZip(archive, { dir: BUILD_PATHS.electron }))
+  await packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'extract:electron', () => {
+    // DSH Desktop fork: darwin 下改用系统 ditto 解压。extract-zip 的 node 流在目录树创建
+    // 阶段偶发丢失事件循环（unsettled top-level await，同输入同 node 版本时好时坏），
+    // 原生工具不受影响；非 darwin 保持 extract-zip 不变。"--" 后的两个路径是纯操作数。
+    if (process.platform === 'darwin') {
+      execFileSync('ditto', ['-x', '-k', '--', resolve(archive), resolve(BUILD_PATHS.electron)], { stdio: 'pipe' })
+      return Promise.resolve()
+    }
+    return extractZip(archive, { dir: BUILD_PATHS.electron })
+  })
   const executable = join(BUILD_PATHS.electron, platform === 'win32' ? 'electron.exe' : 'Electron.app/Contents/MacOS/Electron')
   const nodeVersion = execFileSync(executable, ['-p', 'process.versions.node'], {
     encoding: 'utf8', env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
