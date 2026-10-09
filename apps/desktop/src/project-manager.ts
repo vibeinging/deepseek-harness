@@ -45,6 +45,7 @@ export const FORK_BUNDLE_VERSIONS = {
   '@vibeinging/dsh-client-ui-worktree': '0.1.3',
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
   '@vibeinging/dsh-desktop-shell': '0.1.1',
+  'dsh-context': '0.66.0',
 } as const
 const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS).concat(['@deepseek-ai/dsh-experimental-schedule-bundle'])
 const PROFILE_BUNDLES: readonly string[] = [...WEB_PROFILE.bundles, ...FORK_PROFILE_BUNDLES]
