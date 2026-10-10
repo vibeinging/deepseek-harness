@@ -25,3 +25,16 @@ index a637bab2668ef88e7382dd4aa5db62b74fdde898..ebcafac58971bdd7c69b78ceddcd401a
            ],
            "type": "string"
          },
+diff --git a/out/macPackager.js b/out/macPackager.js
+--- a/out/macPackager.js
++++ b/out/macPackager.js
+@@ -359,8 +359,8 @@
+             identityName: (identity === null || identity === void 0 ? void 0 : identity.name) || "none",
+             identityHash: (identity === null || identity === void 0 ? void 0 : identity.hash) || "none",
+             provisioningProfile: provisioningProfile || "none",
+         }, customSign ? "executing custom sign" : "signing");
+-        return customSign ? Promise.resolve(customSign(opts, this)) : (0, macCodeSign_1.sign)({ ...opts, identity: identity ? identity.name : undefined });
++        return customSign ? Promise.resolve(customSign(opts, this)) : (0, macCodeSign_1.sign)({ ...opts, identity: identity ? identity.hash || identity.name : undefined });
+     }
+     //noinspection JSMethodCanBeStatic
+     async doFlat(appPath, outFile, identity, keychain) {
