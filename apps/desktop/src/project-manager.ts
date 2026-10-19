@@ -48,7 +48,8 @@ export const FORK_BUNDLE_VERSIONS = {
   'dsh-context': '0.73.3',
   'dsh-whale-widget': '0.4.2',
 } as const
-const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS).concat(['@deepseek-ai/dsh-experimental-schedule-bundle'])
+// 0.2.1 起上游退役了 experimental-schedule-bundle（Web 组合自带 Schedule，profile 加载时自动剔除退役项）。
+const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS)
 const PROFILE_BUNDLES: readonly string[] = [...WEB_PROFILE.bundles, ...FORK_PROFILE_BUNDLES]
 
 /**
