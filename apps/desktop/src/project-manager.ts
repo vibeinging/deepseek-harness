@@ -83,6 +83,34 @@ function seedForkProfileCompatibility(projectDir: string, runtimeVersion: string
   }
   if (changed) writeFileSync(path, `${JSON.stringify(exemptions, undefined, 2)}\n`, { mode: 0o600 })
 }
+
+/**
+ * 向存量 profile 的 bundle 清单增补缺失的 fork bundle 名（合并式，不动既有顺序与第三方条目）。
+ * initProfile 只在清单缺失时整份写入，fork 后续新增预装包（如 dsh-context、dsh-whale-widget）
+ * 若不增补，依赖会随运行时工程钉版更新、但激活清单永远不含新包——装了也不加载。
+ * 结构非法（读不出/非对象/无 bundles 数组）则跳过，交由 createPluginProfile 的首建路径兜底。
+ * @param projectDir - Desktop profile 目录。
+ */
+function mergeForkProfileBundles(projectDir: string): void {
+  const path = join(projectDir, 'package.json')
+  let manifest: { dsh?: { profile?: { bundles?: unknown } } }
+  try {
+    const value: unknown = JSON.parse(readFileSync(path, 'utf8'))
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return
+    manifest = value as typeof manifest
+  } catch { return }
+  const bundles = manifest.dsh?.profile?.bundles
+  if (!Array.isArray(bundles)) return
+  const have = new Set(bundles.map(name => (typeof name === 'string' ? name : '')))
+  let changed = false
+  for (const name of FORK_PROFILE_BUNDLES) {
+    if (!have.has(name)) {
+      bundles.push(name)
+      changed = true
+    }
+  }
+  if (changed) writeFileSync(path, `${JSON.stringify(manifest, undefined, 2)}\n`, { mode: 0o600 })
+}
 const WORKSPACE_SETTINGS = 'nodeLinker: hoisted\nautoInstallPeers: false\n'
 function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, undefined, 2)}\n`, { mode: 0o600 })
@@ -139,6 +167,7 @@ export class DesktopProjectManager {
       const runtime = readDesktopRuntime(this.runtime.dsh)
       migrateProfileSettings(this.paths.profile)
       createPluginProfile(this.paths.profile)
+      mergeForkProfileBundles(this.paths.profile)
       seedForkProfileCompatibility(this.paths.profile, runtime.release.version)
       removeLinkProjections(this.paths.profile)
     })
