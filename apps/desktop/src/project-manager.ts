@@ -44,7 +44,7 @@ export const FORK_BUNDLE_VERSIONS = {
   '@vibeinging/dsh-model-inheritance': '0.1.0',
   '@vibeinging/dsh-client-ui-worktree': '0.1.4',
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
-  '@vibeinging/dsh-desktop-shell': '0.1.1',
+  '@vibeinging/dsh-desktop-shell': '0.1.2',
   'dsh-context': '0.73.3',
   'dsh-whale-widget': '0.4.2',
 } as const
