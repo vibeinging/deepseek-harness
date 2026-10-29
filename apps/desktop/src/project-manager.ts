@@ -34,17 +34,17 @@ const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
 // tarball 保持同步）。恢复流程（disableAllPlugins）仍回退官方 WEB_PROFILE 基线，保证
 // 最小可启动形态；dev 模式同样保持官方组合。
 export const FORK_BUNDLE_VERSIONS = {
-  'dsh-better-sidebar': '0.28.0',
-  'dshmarket': '1.66.42',
+  'dsh-better-sidebar': '0.28.2',
+  'dshmarket': '1.73.3',
   '@vibeinging/dsh-session-teams': '0.1.2',
-  '@linxin666/dsh-client-ui-task-board': '0.4.7',
-  'ds-harness-remote': '0.5.13',
+  '@linxin666/dsh-client-ui-task-board': '0.4.12',
+  'ds-harness-remote': '0.5.23',
   'dsh-multimedia-webui-input': '0.1.0',
   '@vibeinging/dsh-model-inheritance': '0.1.0',
   '@vibeinging/dsh-client-ui-worktree': '0.1.4',
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
   '@vibeinging/dsh-desktop-shell': '0.1.4',
-  'dsh-context': '0.73.3',
+  'dsh-context': '0.78.0',
   'dsh-whale-widget': '0.4.2',
 } as const
 // 0.2.1 起上游退役了 experimental-schedule-bundle（Web 组合自带 Schedule，profile 加载时自动剔除退役项）。
