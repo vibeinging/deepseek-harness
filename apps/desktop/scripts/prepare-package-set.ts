@@ -39,7 +39,6 @@ const FORK_ROOT_PACKAGES = [
   'ds-harness-remote',
   'dsh-multimedia-webui-input',
   '@vibeinging/dsh-model-inheritance',
-  '@vibeinging/dsh-client-ui-worktree',
   '@vibeinging/dsh-desktop-chrome',
   '@vibeinging/dsh-desktop-shell',
   'dsh-context',

@@ -41,12 +41,14 @@ export const FORK_BUNDLE_VERSIONS = {
   'ds-harness-remote': '0.6.2',
   'dsh-multimedia-webui-input': '0.1.0',
   '@vibeinging/dsh-model-inheritance': '0.1.0',
-  '@vibeinging/dsh-client-ui-worktree': '0.1.4',
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
   '@vibeinging/dsh-desktop-shell': '0.1.4',
   'dsh-context': '0.81.2',
   'dsh-whale-widget': '0.4.2',
 } as const
+// 上游 0.2.2 起原生提供「变更请求与工作树」，自带的 Worktree 会话标签页退役；
+// 每次引导从存量 profile 清单移除，避免残留无法解析的预装项。
+const FORK_RETIRED_BUNDLES = ['@vibeinging/dsh-client-ui-worktree']
 // 0.2.1 起上游退役了 experimental-schedule-bundle（Web 组合自带 Schedule，profile 加载时自动剔除退役项）。
 const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS)
 const PROFILE_BUNDLES: readonly string[] = [...WEB_PROFILE.bundles, ...FORK_PROFILE_BUNDLES]
@@ -106,6 +108,13 @@ function mergeForkProfileBundles(projectDir: string): void {
   for (const name of FORK_PROFILE_BUNDLES) {
     if (!have.has(name)) {
       bundles.push(name)
+      changed = true
+    }
+  }
+  for (const name of FORK_RETIRED_BUNDLES) {
+    const index = bundles.indexOf(name)
+    if (index >= 0) {
+      bundles.splice(index, 1)
       changed = true
     }
   }
