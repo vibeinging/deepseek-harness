@@ -35,15 +35,15 @@ const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
 // 最小可启动形态；dev 模式同样保持官方组合。
 export const FORK_BUNDLE_VERSIONS = {
   'dsh-better-sidebar': '0.30.1',
-  'dshmarket': '1.73.11',
+  'dshmarket': '1.73.16',
   '@vibeinging/dsh-session-teams': '0.1.2',
-  '@linxin666/dsh-client-ui-task-board': '0.4.15',
-  'ds-harness-remote': '0.6.2',
+  '@linxin666/dsh-client-ui-task-board': '0.4.16',
+  'ds-harness-remote': '0.6.4',
   'dsh-multimedia-webui-input': '0.1.0',
   '@vibeinging/dsh-model-inheritance': '0.1.0',
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
   '@vibeinging/dsh-desktop-shell': '0.1.4',
-  'dsh-context': '0.81.2',
+  'dsh-context': '0.83.0',
   'dsh-whale-widget': '0.4.2',
 } as const
 // 上游 0.2.2 起原生提供「变更请求与工作树」，自带的 Worktree 会话标签页退役；
