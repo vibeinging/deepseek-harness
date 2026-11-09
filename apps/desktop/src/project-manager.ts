@@ -44,11 +44,12 @@ export const FORK_BUNDLE_VERSIONS = {
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
   '@vibeinging/dsh-desktop-shell': '0.1.4',
   'dsh-context': '0.83.0',
-  'dsh-whale-widget': '0.4.2',
 } as const
-// 上游 0.2.2 起原生提供「变更请求与工作树」，自带的 Worktree 会话标签页退役；
-// 每次引导从存量 profile 清单移除，避免残留无法解析的预装项。
-const FORK_RETIRED_BUNDLES = ['@vibeinging/dsh-client-ui-worktree']
+// 退役的 fork 预装项：每次引导从存量 profile 清单移除，避免残留无法解析的预装项。
+// - worktree 标签页：上游 0.2.2 起原生提供「变更请求与工作树」。
+// - dsh-whale-widget：作者自 2026-10 起停更，未适配 0.2.2，且带"桌面端关闭插件后刷新致无法启动"
+//   的已知缺陷；需要记账的用户可自行从插件市场安装。
+const FORK_RETIRED_BUNDLES = ['@vibeinging/dsh-client-ui-worktree', 'dsh-whale-widget']
 // 0.2.1 起上游退役了 experimental-schedule-bundle（Web 组合自带 Schedule，profile 加载时自动剔除退役项）。
 const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS)
 const PROFILE_BUNDLES: readonly string[] = [...WEB_PROFILE.bundles, ...FORK_PROFILE_BUNDLES]

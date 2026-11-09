@@ -42,7 +42,6 @@ const FORK_ROOT_PACKAGES = [
   '@vibeinging/dsh-desktop-chrome',
   '@vibeinging/dsh-desktop-shell',
   'dsh-context',
-  'dsh-whale-widget',
 ] as const
 const APP_ROOT = resolve(import.meta.dirname, '..')
 const REPOSITORY_ROOT = resolve(APP_ROOT, '..', '..')
