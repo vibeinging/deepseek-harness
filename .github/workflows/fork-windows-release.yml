@@ -41,6 +41,25 @@ jobs:
         # 强制 clone 会 ERR_PNPM_LINKING_FAILED；默认模式自动回退 hardlink/copy。
         run: pnpm install --frozen-lockfile
 
+      - name: Write .env.windows (non-secret packaging settings)
+        working-directory: apps/desktop
+        shell: pwsh
+        run: |
+          @'
+          DSH_DESKTOP_APP_ID=com.vibeinging.dsh-desktop
+          DSH_DESKTOP_AUTO_UPDATE_ENV=test
+          DOWNLOAD_TEST_ORIGIN=https://dshdesktopstation.com
+          DOWNLOAD_TEST_RELEASE_ID=548def65905294bc5f1714aedb04867d
+          DSH_DESKTOP_MANDATORY_UPDATE_TEST_ORIGIN=https://dshdesktopstation.com
+          DSH_DESKTOP_MANDATORY_UPDATE_CONFIG={"allowedAuthOrigins":["https://dshdesktopstation.com"]}
+          DSH_DESKTOP_WINDOWS_CER_FILE=
+          DSH_DESKTOP_WINDOWS_SIGNTOOL=
+          DSH_DESKTOP_WINDOWS_KEY_CONTAINER=
+          DSH_DESKTOP_WINDOWS_TOKEN_PIN=
+          DSH_DESKTOP_WINDOWS_COMPRESSION_LEVEL=3
+          '@ | Set-Content -NoNewline -Encoding utf8 .env.windows
+          # 与本地 mac 打包同源（dshdesktopstation.com / 同一 release ID），不含任何机密。
+
       - name: Package win-x64 unsigned
         working-directory: apps/desktop
         run: pnpm run package:win:x64:unsigned -- --build-version ${{ inputs.build_version }}
