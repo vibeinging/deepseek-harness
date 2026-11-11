@@ -71,7 +71,7 @@ jobs:
         working-directory: apps/desktop
         shell: pwsh
         run: |
-          Get-ChildItem unsigned-artifacts, artifacts -ErrorAction SilentlyContinue |
+          Get-ChildItem .desktop-build/targets/win-x64/unsigned-artifacts |
             Select-Object Name, Length | Format-Table -AutoSize
 
       - name: Upload installer artifacts
@@ -79,11 +79,8 @@ jobs:
         with:
           name: fork-win-x64-unsigned
           path: |
-            apps/desktop/unsigned-artifacts/*.exe
-            apps/desktop/unsigned-artifacts/*.exe.blockmap
-            apps/desktop/unsigned-artifacts/*.yml
-            apps/desktop/artifacts/*.exe
-            apps/desktop/artifacts/*.exe.blockmap
-            apps/desktop/artifacts/*.yml
+            apps/desktop/.desktop-build/targets/win-x64/unsigned-artifacts/*.exe
+            apps/desktop/.desktop-build/targets/win-x64/unsigned-artifacts/*.exe.blockmap
+            apps/desktop/.desktop-build/targets/win-x64/unsigned-artifacts/*.yml
           if-no-files-found: error
           retention-days: 14
