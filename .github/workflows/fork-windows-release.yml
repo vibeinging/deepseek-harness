@@ -1,0 +1,64 @@
+name: Fork Windows Release
+
+# fork 线的 Windows x64 打包（本地 mac 跨编被 package-target 硬拒：win-x64 必须
+# Windows x64 主机跑打包后冒烟）。手动触发，产物以 artifact 供人工附加到
+# vibeinging/dsh-desktop 的 GitHub Release（与 mac 同一 build-version 同一 Release）。
+on:
+  workflow_dispatch:
+    inputs:
+      build_version:
+        description: 'build-version，必须与目标 Release 的 mac 资产完全一致（如 0.2.2-rc.1.20261109.1）'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fork-windows-release
+  cancel-in-progress: true
+
+jobs:
+  package-win-x64:
+    name: win-x64 nsis (unsigned)
+    runs-on: windows-2025
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile --package-import-method=clone
+
+      - name: Package win-x64 unsigned
+        working-directory: apps/desktop
+        run: pnpm run package:win:x64:unsigned -- --build-version ${{ inputs.build_version }}
+        env:
+          # 本机无 Windows 代码签名证书；与旧线一致以 unsigned 交付（SmartScreen 提示见 FAQ）
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: List artifacts
+        working-directory: apps/desktop
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts | Select-Object Name, Length | Format-Table -AutoSize
+
+      - name: Upload installer artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fork-win-x64-unsigned
+          path: |
+            apps/desktop/artifacts/*.exe
+            apps/desktop/artifacts/*.exe.blockmap
+            apps/desktop/artifacts/*.yml
+          if-no-files-found: error
+          retention-days: 14
