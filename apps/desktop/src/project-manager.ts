@@ -34,16 +34,16 @@ const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
 // tarball 保持同步）。恢复流程（disableAllPlugins）仍回退官方 WEB_PROFILE 基线，保证
 // 最小可启动形态；dev 模式同样保持官方组合。
 export const FORK_BUNDLE_VERSIONS = {
-  'dsh-better-sidebar': '0.30.1',
-  'dshmarket': '1.73.16',
+  'dsh-better-sidebar': '0.32.1',
+  'dshmarket': '1.73.19',
   '@vibeinging/dsh-session-teams': '0.1.2',
-  '@linxin666/dsh-client-ui-task-board': '0.4.16',
+  '@linxin666/dsh-client-ui-task-board': '0.4.18',
   'ds-harness-remote': '0.6.4',
   'dsh-multimedia-webui-input': '0.1.0',
   '@vibeinging/dsh-model-inheritance': '0.1.0',
   '@vibeinging/dsh-desktop-chrome': '0.1.0',
   '@vibeinging/dsh-desktop-shell': '0.1.4',
-  'dsh-context': '0.83.0',
+  'dsh-context': '0.84.1',
 } as const
 // 退役的 fork 预装项：每次引导从存量 profile 清单移除，避免残留无法解析的预装项。
 // - worktree 标签页：上游 0.2.2 起原生提供「变更请求与工作树」。
