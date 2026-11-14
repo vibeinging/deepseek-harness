@@ -36,7 +36,6 @@ const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
 export const FORK_BUNDLE_VERSIONS = {
   'dsh-better-sidebar': '0.32.1',
   'dshmarket': '1.73.19',
-  '@vibeinging/dsh-session-teams': '0.1.2',
   '@linxin666/dsh-client-ui-task-board': '0.4.18',
   'ds-harness-remote': '0.6.4',
   'dsh-multimedia-webui-input': '0.1.0',
@@ -49,7 +48,9 @@ export const FORK_BUNDLE_VERSIONS = {
 // - worktree 标签页：上游 0.2.2 起原生提供「变更请求与工作树」。
 // - dsh-whale-widget：作者自 2026-10 起停更，未适配 0.2.2，且带"桌面端关闭插件后刷新致无法启动"
 //   的已知缺陷；需要记账的用户可自行从插件市场安装。
-const FORK_RETIRED_BUNDLES = ['@vibeinging/dsh-client-ui-worktree', 'dsh-whale-widget']
+// - session-teams：上游 0.2.2-rc.2 起原生内置 AgentTeam（按会话开启、统一具名子代理），
+//   且 rc.3 插件页不再展示预装 bundle，其唯一 UI 入口消失；peers 钉 0.1.5-rc.1 两代落后。
+const FORK_RETIRED_BUNDLES = ['@vibeinging/dsh-client-ui-worktree', 'dsh-whale-widget', '@vibeinging/dsh-session-teams']
 // 0.2.1 起上游退役了 experimental-schedule-bundle（Web 组合自带 Schedule，profile 加载时自动剔除退役项）。
 const FORK_PROFILE_BUNDLES = Object.keys(FORK_BUNDLE_VERSIONS)
 const PROFILE_BUNDLES: readonly string[] = [...WEB_PROFILE.bundles, ...FORK_PROFILE_BUNDLES]

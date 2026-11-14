@@ -34,7 +34,6 @@ const ROOT_PACKAGES = [DSH_PACKAGE, DESKTOP_HOST_PACKAGE] as const
 const FORK_ROOT_PACKAGES = [
   'dsh-better-sidebar',
   'dshmarket',
-  '@vibeinging/dsh-session-teams',
   '@linxin666/dsh-client-ui-task-board',
   'ds-harness-remote',
   'dsh-multimedia-webui-input',
